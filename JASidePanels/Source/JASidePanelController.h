@@ -70,6 +70,10 @@ typedef enum _JASidePanelState {
 // push side panels instead of overlapping them
 @property (nonatomic, assign) BOOL pushesSidePanels;
 
+// scale center panel when open left/right
+@property (nonatomic) CGFloat topGapPercentage;
+@property (nonatomic) CGFloat topMaxOffset;
+
 // size the left panel based on % of total screen width
 @property (nonatomic) CGFloat leftGapPercentage; 
 

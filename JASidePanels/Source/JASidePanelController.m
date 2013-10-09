@@ -132,6 +132,7 @@ static char ja_kvoContext;
 
 - (void)_baseInit {
     self.style = JASidePanelSingleActive;
+    self.topGapPercentage = 0.1f;
     self.leftGapPercentage = 0.8f;
     self.rightGapPercentage = 0.8f;
     self.minimumMovePercentage = 0.15f;
@@ -497,6 +498,25 @@ static char ja_kvoContext;
         CGRect frame = _centerPanelRestingFrame;
         frame.origin.x += roundf([self _correctMovement:translate.x]);
         
+        //// scale Y
+        // if handling left
+        BOOL left;
+        if (_locationBeforePan.x > 0) {
+            left = YES;
+        } else if (_locationBeforePan.x < 0) {
+            left = NO;
+        } else {
+            left = frame.origin.x > 0;
+        }
+        
+        CGFloat offsetY = translate.x / (left?self.leftVisibleWidth:self.rightVisibleWidth) * self.topMaxOffset;
+        offsetY = MIN(offsetY, self.topMaxOffset);
+        offsetY = MAX(offsetY, -self.topMaxOffset);
+        if (!left) offsetY = -offsetY;
+        frame.size.height -= offsetY * 2;
+        frame.origin.y += offsetY;
+        //END// scale Y
+        
         if (self.style == JASidePanelMultipleActive) {
             frame.size.width = self.view.bounds.size.width - frame.origin.x;
         }
@@ -784,6 +804,10 @@ static char ja_kvoContext;
 		}
         case JASidePanelLeftVisible: {
             frame.origin.x = self.leftVisibleWidth;
+            
+            frame.size.height -= self.topMaxOffset * 2;
+            frame.origin.y = self.topMaxOffset;
+            
             if (self.style == JASidePanelMultipleActive) {
                 frame.size.width = self.view.bounds.size.width - self.leftVisibleWidth;
             }
@@ -791,6 +815,10 @@ static char ja_kvoContext;
 		}
         case JASidePanelRightVisible: {
             frame.origin.x = -self.rightVisibleWidth;
+            
+            frame.size.height -= self.topMaxOffset * 2;
+            frame.origin.y = self.topMaxOffset;
+            
             if (self.style == JASidePanelMultipleActive) {
                 frame.origin.x = 0.0f;
                 frame.size.width = self.view.bounds.size.width - self.rightVisibleWidth;
@@ -800,6 +828,10 @@ static char ja_kvoContext;
     }
     _centerPanelRestingFrame = frame;
     return _centerPanelRestingFrame;
+}
+
+- (CGFloat)topMaxOffset {
+    return _topMaxOffset ?: floorf(self.view.bounds.size.width * self.topGapPercentage);
 }
 
 - (CGFloat)leftVisibleWidth {
